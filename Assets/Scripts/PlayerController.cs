@@ -7,17 +7,11 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
-    // Rigidbody of the player.
+    
     private Rigidbody rb;
-
-    // Variable to keep track of collected "PickUp" objects.
     private int count;
-
-    // Movement along X and Y axes.
     private float movementX;
     private float movementY;
-
-    // Speed at which the player moves.
     public float speed = 0;
 
     // UI text component to display count of "PickUp" objects collected.
@@ -29,16 +23,10 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update.
     void Start()
     {
-        // Get and store the Rigidbody component attached to the player.
         rb = GetComponent<Rigidbody>();
 
-        // Initialize count to zero.
         count = 0;
-
-        // Update the count display.
         SetCountText();
-
-        // Initially set the win text to be inactive.
         winTextObject.SetActive(false);
     }
 
@@ -63,6 +51,25 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(movement * speed);
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            speed = 0f;
+            rb.linearVelocity = Vector3.zero; // eğer Rigidbody kullanıyorsan
+
+            EnemyMovement enemyScript = collision.gameObject.GetComponent<EnemyMovement>();
+            if (enemyScript != null)
+            {
+                enemyScript.player = null;
+            }
+
+            winTextObject.SetActive(true);
+            winTextObject.GetComponent<TextMeshProUGUI>().text = "You Lose!";
+
+            gameObject.SetActive(false);
+        }
+    }
 
     void OnTriggerEnter(Collider other)
     {
@@ -91,6 +98,8 @@ public class PlayerController : MonoBehaviour
         {
             // Display the win text.
             winTextObject.SetActive(true);
+
+            Destroy(GameObject.FindGameObjectWithTag("Enemy"));
         }
     }
 }
